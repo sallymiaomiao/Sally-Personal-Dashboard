@@ -45,7 +45,7 @@ st.subheader("Weekly Progress")
 
 df = pd.DataFrame({
     "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "Tasks Completed": [3, 4, 2, 5, 4]
+    "Tasks Completed": [7, 6, 7, 0, 0]
 })
 
 st.bar_chart(df.set_index("Day"))
