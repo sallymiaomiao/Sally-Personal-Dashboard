@@ -109,7 +109,7 @@ inventory_data = {
         1,
         1
     ],
-    "TOOL NUMBER":[
+    "NEXT TOOL NUMBER":[
         "AFT",
         "STK",
         "0A1499",
