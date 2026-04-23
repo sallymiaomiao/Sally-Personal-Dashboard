@@ -3,13 +3,19 @@ import pandas as pd
 
 st.set_page_config(page_title="Sally Personal Dashboard", layout="wide")
 
-st.title("📊 Sally Personal Dashboard")
+st.markdown(
+    "<h1 style='text-align: center;'>Sally Personal Dashboard</h1>",
+    unsafe_allow_html=True
+)
 
 # =========================
 # FUNCTIONS
 # =========================
 
-def display_top_metrics():
+def display_daily_metrics():
+
+    st.subheader("Daily Metrics")
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -20,7 +26,6 @@ def display_top_metrics():
 
     with col3:
         st.metric("Open Items", 3)
-
 
 def display_tasks():
     st.subheader("Daily Tasks")
@@ -145,24 +150,60 @@ def display_inventory():
     st.dataframe(
         styled_df,
         use_container_width=True,
-        height=500
+        height=320
     )
 
 
 # =========================
 # PAGE
-# =========================
-
-display_top_metrics()
-
 st.divider()
 
-display_tasks()
+def display_weekly_kpi():
+    st.subheader("Weekly KPI Dashboard")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-st.divider()
+    r1c1, r1c2 = st.columns(2)
+    r2c1, r2c2 = st.columns(2)
 
-display_weekly_progress()
+    with r1c1:
+        st.metric("Weekly Tasks Done", 28)
+
+    with r1c2:
+        st.metric("Open Items", 6)
+
+    with r2c1:
+        st.metric("Shortages", 4)
+
+    with r2c2:
+        st.metric("Overdue Items", 2)
+
+    kpi_df = pd.DataFrame({
+        "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+        "Tasks Completed": [7, 6, 8, 4, 3],
+        "Shortages Closed": [1, 2, 1, 0, 1]
+    })
+
+    left_spacer, center_chart, right_spacer = st.columns([1, 6, 1])
+
+    with center_chart:
+        st.bar_chart(kpi_df.set_index("Day"), height=350)
+
+# 左右布局
+left_col, right_col = st.columns([1.3, 1])
+
+# LEFT — Daily Tasks
+with left_col:
+    display_daily_metrics()
+    display_tasks()
+
+# RIGHT — KPI + Weekly Progress
+with right_col:
+    display_weekly_kpi()
+    display_weekly_progress()
 
 st.divider()
 
 display_inventory()
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
