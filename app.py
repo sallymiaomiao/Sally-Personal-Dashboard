@@ -126,4 +126,61 @@ inventory_data = {
 
 inventory_df = pd.DataFrame(inventory_data)
 
-st.data_editor(inventory_df)
+inventory_df = inventory_df.rename(columns={
+    "NEXT TOOL NUMBER": "Next Tool / Location"
+})
+
+#st.data_editor(inventory_df)
+
+inventory_df["Status"] = inventory_df["Next Tool / Location"].apply(
+    lambda x: "In Stock" if x == "STK" else ("Aftermarket" if x == "AFT" else "Allocated")
+)
+
+# Filter + search
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    search_part = st.text_input("Search Part Number")
+
+with col2:
+    status_filter = st.selectbox("Filter by Status", ["All", "In Stock", "Allocated", "Aftermarket"])
+
+filtered_df = inventory_df.copy()
+
+if search_part:
+    filtered_df = filtered_df[filtered_df["Part Number"].astype(str).str.contains(search_part)]
+
+if status_filter != "All":
+    filtered_df = filtered_df[filtered_df["Status"] == status_filter]
+
+# Style table
+def highlight_status(val):
+    if val == "In Stock":
+        return "background-color: #d1fae5; color: black;"
+    elif val == "Allocated":
+        return "background-color: #fde68a; color: black;"
+    elif val == "Aftermarket":
+        return "background-color: #bfdbfe; color: black;"
+    return ""
+
+def highlight_on_hand(val):
+    if val >= 2:
+        return "background-color: #dcfce7; color: black; font-weight: bold;"
+    else:
+        return "background-color: #fee2e2; color: black; font-weight: bold;"
+
+styled_df = (
+    filtered_df.style
+    .map(highlight_status, subset=["Status"])
+    .map(highlight_on_hand, subset=["On Hand"])
+    .set_properties(**{
+        "text-align": "left",
+        "font-size": "14px"
+    })
+)
+
+st.dataframe(
+    styled_df,
+    use_container_width=True,
+    height=500
+)
