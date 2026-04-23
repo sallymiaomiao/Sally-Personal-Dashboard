@@ -52,9 +52,6 @@ st.bar_chart(df.set_index("Day"))
 
 st.divider()
 
-# Learning progress
-st.subheader("Python Learning")
-
 st.progress(25)
 
 st.write("Current focus: Streamlit basics")
