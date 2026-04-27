@@ -49,17 +49,20 @@ def load_inventory():
             "110113080", "5700455", "110115010", "110159900", "110097770",
             "100181480", "100213561", "170164106", "100145630", "110094090",
             "1174680", "110132760", "110214250", "110139750", "110130670",
-            "110215141", "300000666", "120210211","170167631", "100158620"
+            "110215141", "300000666", "120210211","170167631", "100158620",
+            "100185370"
         ],
         "On Hand": [
             1, 1, 1, 2, 2, 1, 1, 2, 1, 1,
-            1, 2, 1, 1, 1, 1, 1, 1, 1, 1
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1,
+            1
         ],
         "Description": [
             "AFT", "STK", "STK", "0A1500K", "STK",
-            "0A9388", "0A1502", "0A9255", "0A9256", "STK",
+            "0A9388", "0A1502", "0A9255", "0A9412", "STK",
             "080747", "0A1499 & NEXT TOOL", "STK", "STK", "0A9254K",
-            "0A1502", "STK", "0A1500K", "0A9412", "0A9412"
+            "0A1502", "STK", "0A1500K", "0A9412", "0A9412",
+            "0A9412"
         ]
     }
 
@@ -101,15 +104,15 @@ def display_daily_metrics():
 
     with c1:
         with st.container(border=True):
-            st.metric("Tasks Today", 8)
+            st.metric("Tasks Today", 9)
 
     with c2:
         with st.container(border=True):
-            st.metric("Completed", 5)
+            st.metric("Completed", 7)
 
     with c3:
         with st.container(border=True):
-            st.metric("Open Items", 3)
+            st.metric("Open Items", 2)
 
 
 def display_tasks():
@@ -166,7 +169,7 @@ def display_weekly_progress():
 
     df = pd.DataFrame({
         "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-        "Tasks Completed": [7, 6, 8, 4, 3],
+        "Tasks Completed": [7, 6, 7, 5, 8],
     })
 
     st.bar_chart(df.set_index("Day"), height=240)
