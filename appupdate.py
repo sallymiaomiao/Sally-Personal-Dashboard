@@ -108,11 +108,11 @@ def display_daily_metrics():
 
     with c2:
         with st.container(border=True):
-            st.metric("Completed", 7)
+            st.metric("Completed", 8)
 
     with c3:
         with st.container(border=True):
-            st.metric("Open Items", 2)
+            st.metric("Open Items", 1)
 
 
 def display_tasks():
@@ -157,7 +157,7 @@ def display_weekly_kpi():
 
     kpi_df = pd.DataFrame({
         "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-        "Tasks Completed": [7, 6, 8, 4, 3],
+        "Tasks Completed": [8, 6, 8, 4, 3],
         "Shortages Closed": [1, 2, 1, 0, 1]
     })
 
@@ -169,7 +169,7 @@ def display_weekly_progress():
 
     df = pd.DataFrame({
         "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-        "Tasks Completed": [7, 6, 7, 5, 8],
+        "Tasks Completed": [8, 6, 7, 5, 8],
     })
 
     st.bar_chart(df.set_index("Day"), height=240)
@@ -218,12 +218,15 @@ def display_inventory():
         with st.container(border=True):
             st.subheader("Inventory - On Hand Balance")
 
-            f1, f2 = st.columns([1.5, 1])
+            f1, f2, f3 = st.columns([1.3, 1, 1])
 
             with f1:
                 search_part = st.text_input("Search Part Number", placeholder="Enter part number...")
 
             with f2:
+                search_tool = st.text_input("Search Tool Number", placeholder="Enter tool number...")
+
+            with f3:
                 status_filter = st.selectbox(
                     "Filter by Status",
                     ["All", "In Stock", "Allocated", "Aftermarket"]
@@ -234,6 +237,11 @@ def display_inventory():
             if search_part:
                 filtered_df = filtered_df[
                     filtered_df["Part Number"].astype(str).str.contains(search_part, case=False, na=False)
+                ]
+
+            if search_tool:
+                filtered_df = filtered_df[
+                    filtered_df["Description"].astype(str).str.contains(search_tool, case=False, na=False)
                 ]
 
             if status_filter != "All":
