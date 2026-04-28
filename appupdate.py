@@ -58,7 +58,7 @@ def load_inventory():
             1
         ],
         "Description": [
-            "AFT", "STK", "STK", "0A1500K", "STK",
+            "0A9412", "STK", "STK", "0A1500K", "STK",
             "0A9388", "0A1502", "0A9255", "0A9412", "STK",
             "080747", "0A1499 & NEXT TOOL", "STK", "STK", "0A9254K",
             "0A1502", "STK", "0A1500K", "0A9412", "0A9412",
