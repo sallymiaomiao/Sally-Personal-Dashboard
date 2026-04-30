@@ -98,6 +98,7 @@ def highlight_on_hand(val):
 # SECTIONS
 # =========================
 def display_daily_metrics():
+
     st.subheader("Daily Metrics")
 
     c1, c2, c3 = st.columns(3)
@@ -114,6 +115,20 @@ def display_daily_metrics():
         with st.container(border=True):
             st.metric("Open Items", 1)
 
+def display_task_metrics():
+
+    st.subheader("Task Metrics")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.metric("Tasks Today", 9)
+
+    with c2:
+        st.metric("Completed", 8)
+
+    with c3:
+        st.metric("Open Items", 1)
 
 def display_tasks():
     st.subheader("Daily Tasks")
@@ -132,7 +147,6 @@ def display_tasks():
 
     for t in tasks:
         st.checkbox(t)
-
 
 def display_weekly_kpi():
     st.subheader("Weekly KPI Dashboard")
@@ -161,26 +175,177 @@ def display_weekly_kpi():
         "Shortages Closed": [1, 2, 1, 0, 1]
     })
 
-    st.bar_chart(kpi_df.set_index("Day"), height=260)
-
+    st.bar_chart(kpi_df.set_index("Day"), height=290)
 
 def display_weekly_progress():
     st.subheader("Weekly Progress")
 
     df = pd.DataFrame({
         "Day": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-        "Tasks Completed": [8, 6, 7, 5, 8],
+        "Tasks Completed": [8, 7, 6, 5, 9],
     })
 
-    st.bar_chart(df.set_index("Day"), height=240)
+    st.bar_chart(df.set_index("Day"), height=290)
 
     progress_value = 25
     st.progress(progress_value)
     st.caption(f"Current focus: Streamlit basics    {progress_value}%")
 
+#monthly performance
+def display_monthly_metrics():
+
+    st.subheader("Monthly KPIs")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        system_otd = 98.7
+        color = "🔴" if system_otd < 99 else "🟢"
+
+        with st.container(border=True):
+            st.metric("System OTD", f"{system_otd}% {color}")
+            st.caption("Target: >99%")
+
+    with c2:
+        so_otd = 96.1
+        color = "🔴" if so_otd < 95 else "🟢"
+
+        with st.container(border=True):
+            st.metric("SO OTD", f"{so_otd}% {color}")
+            st.caption("Target: ≥95%")
+
+    with c3:
+        variance_explained = 92
+        color = "🔴" if variance_explained < 100 else "🟢"
+
+        with st.container(border=True):
+            st.metric("WO Variance Explained", f"{variance_explained}% {color}")
+            st.caption("Target: All variances explained")
+
+    c4, c5 = st.columns(2)
+
+    with c4:
+        mrb_cycle_time = 5.6
+        color = "🔴" if mrb_cycle_time >= 7 else "🟢"
+
+        with st.container(border=True):
+            st.metric("MRB Cycle Time", f"{mrb_cycle_time} Days {color}")
+            st.caption("Target: <7 days")
+
+    with c5:
+        wo_45 = 182
+        color = "🔴" if wo_45 >= 200 else "🟢"
+
+        with st.container(border=True):
+            st.metric("WO >45 Days", f"{wo_45} {color}")
+            st.caption("Target: <200")
+
+def display_yearly_metrics():
+
+    st.subheader("Yearly Metrics")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.metric("Physical Inventory Accuracy", "99.6% 🟢")
+
+    with c2:
+        st.metric("Training Progress", "2 Courses")
+
+    with c3:
+        st.metric("Annual Goal Progress", "65%")
+
+def display_inventory():
+    inventory_df = load_inventory()
+
+    # =========================
+    # Inventory Table
+    # =========================
+    with st.container(border=True):
+        st.subheader("Inventory - On Hand Balance")
+
+        f1, f2, f3 = st.columns([1.3, 1, 1])
+
+        with f1:
+            search_part = st.text_input("Search Part Number", placeholder="Enter part number...")
+
+        with f2:
+            search_tool = st.text_input("Search Tool Number", placeholder="Enter tool number...")
+
+        with f3:
+            status_filter = st.selectbox(
+                "Filter by Status",
+                ["All", "In Stock", "Allocated", "Aftermarket"]
+            )
+
+        filtered_df = inventory_df.copy()
+
+        if search_part:
+            filtered_df = filtered_df[
+                filtered_df["Part Number"].astype(str).str.contains(search_part, case=False, na=False)
+            ]
+
+        if search_tool:
+            filtered_df = filtered_df[
+                filtered_df["Description"].astype(str).str.contains(search_tool, case=False, na=False)
+            ]
+
+        if status_filter != "All":
+            filtered_df = filtered_df[filtered_df["Status"] == status_filter]
+
+        styled_df = (
+            filtered_df.style
+            .map(highlight_status, subset=["Status"])
+            .map(highlight_on_hand, subset=["On Hand"])
+            .set_properties(**{
+                "text-align": "left",
+                "font-size": "14px"
+            })
+        )
+
+        st.dataframe(
+            styled_df,
+            use_container_width=True,
+            height=260,
+            hide_index=True
+        )
+
+        st.caption(f"Showing {len(filtered_df)} of {len(inventory_df)} items")
+
+        # =========================
+        # Inventory Pie Chart
+        # =========================
+        with st.container(border=True):
+            st.subheader("Inventory Status Distribution")
+
+            status_counts = inventory_df["Status"].value_counts()
+
+            fig = create_inventory_pie_chart(status_counts)
+
+            percent_df = pd.DataFrame({
+                "Status": status_counts.index,
+                "Count": status_counts.values,
+                "Percentage": (
+                                      status_counts / status_counts.sum() * 100
+                              ).round(1).astype(str) + "%"
+            })
+
+            pie_col, table_col = st.columns([0.8, 1.0])
+
+            with pie_col:
+                st.pyplot(fig, use_container_width=True)
+
+            with table_col:
+                st.dataframe(
+                    percent_df,
+                    use_container_width=True,
+                    hide_index=True,
+                    height=120
+                )
 
 def create_inventory_pie_chart(status_counts):
-    fig, ax = plt.subplots(figsize=(2.2,2.2), dpi=120)
+
+    fig, ax = plt.subplots(figsize=(1.3, 1.3), dpi=220)
 
     colors = ["#66bd63", "#ffd54f", "#1565c0", "#ef5350"]
 
@@ -188,10 +353,18 @@ def create_inventory_pie_chart(status_counts):
         status_counts.values,
         labels=None,
         autopct="%1.1f%%",
-        startangle=90,
+        startangle=80,
         colors=colors[:len(status_counts)],
-        wedgeprops={"width": 0.45, "edgecolor": "white"},
-        textprops={"fontsize": 8}
+
+        wedgeprops={
+            "width": 0.6,   # 中间白色减少
+            "edgecolor": "white"
+        },
+
+        textprops={
+            "fontsize": 5,
+            "weight": "bold"
+        }
     )
 
     ax.text(
@@ -200,112 +373,71 @@ def create_inventory_pie_chart(status_counts):
         f"Total Items\n{status_counts.sum()}",
         ha="center",
         va="center",
-        fontsize=9,
+        fontsize=5,
         fontweight="bold"
     )
 
     ax.axis("equal")
-    plt.tight_layout()
+
+    # ⭐ 最关键：去掉外围空白
+    plt.tight_layout(pad=0)
+
     return fig
-
-
-def display_inventory():
-    inventory_df = load_inventory()
-
-    left, right = st.columns([1.6, 0.6])
-
-    with left:
-        with st.container(border=True):
-            st.subheader("Inventory - On Hand Balance")
-
-            f1, f2, f3 = st.columns([1.3, 1, 1])
-
-            with f1:
-                search_part = st.text_input("Search Part Number", placeholder="Enter part number...")
-
-            with f2:
-                search_tool = st.text_input("Search Tool Number", placeholder="Enter tool number...")
-
-            with f3:
-                status_filter = st.selectbox(
-                    "Filter by Status",
-                    ["All", "In Stock", "Allocated", "Aftermarket"]
-                )
-
-            filtered_df = inventory_df.copy()
-
-            if search_part:
-                filtered_df = filtered_df[
-                    filtered_df["Part Number"].astype(str).str.contains(search_part, case=False, na=False)
-                ]
-
-            if search_tool:
-                filtered_df = filtered_df[
-                    filtered_df["Description"].astype(str).str.contains(search_tool, case=False, na=False)
-                ]
-
-            if status_filter != "All":
-                filtered_df = filtered_df[filtered_df["Status"] == status_filter]
-
-            styled_df = (
-                filtered_df.style
-                .map(highlight_status, subset=["Status"])
-                .map(highlight_on_hand, subset=["On Hand"])
-                .set_properties(**{
-                    "text-align": "left",
-                    "font-size": "14px"
-                })
-            )
-
-            st.dataframe(
-                styled_df,
-                use_container_width=True,
-                height=260,
-                hide_index=True
-            )
-
-            st.caption(f"Showing {len(filtered_df)} of {len(inventory_df)} items")
-
-    with right:
-        with st.container(border=True):
-            st.subheader("Inventory Status Distribution")
-
-            status_counts = inventory_df["Status"].value_counts()
-
-            fig = create_inventory_pie_chart(status_counts)
-
-            center_col = st.columns([1, 2, 1])[1]
-
-            with center_col:
-                st.pyplot(fig)
-
-            percent_df = pd.DataFrame({
-                "Status": status_counts.index,
-                "Count": status_counts.values,
-                "Percentage": (status_counts / status_counts.sum() * 100).round(1).astype(str) + "%"
-            })
-
-            st.dataframe(percent_df, use_container_width=True, hide_index=True)
-
 
 # =========================
 # PAGE LAYOUT
 # =========================
 
-top_left, top_right = st.columns([1, 1.1])
+left_col, right_col = st.columns([1, 1.15])
 
-with top_left:
+# 左边：Daily + Weekly
+with left_col:
+
+    st.subheader("Daily Operations")
+
     with st.container(border=True):
         display_daily_metrics()
 
     with st.container(border=True):
         display_tasks()
 
-with top_right:
+    # 不要divider
+
+    st.subheader("Weekly Execution")
+
     with st.container(border=True):
         display_weekly_kpi()
 
     with st.container(border=True):
         display_weekly_progress()
 
-display_inventory()
+
+# 右边：Monthly + Yearly + Inventory
+with right_col:
+
+    st.subheader("Monthly Performance")
+
+    with st.container(border=True):
+        display_monthly_metrics()
+
+#不要divider
+
+    st.subheader("Yearly Goals")
+
+    with st.container(border=True):
+        display_yearly_metrics()
+
+        # 只加一点点高度（最推荐）
+        st.markdown(
+            "<div style='height:0px;'></div>",
+            unsafe_allow_html=True
+        )
+
+    # 不要divider
+
+    # Inventory
+
+    st.subheader("Inventory Management")
+
+    with st.container(border=True):
+        display_inventory()
